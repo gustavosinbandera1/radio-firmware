@@ -62,6 +62,7 @@ During the Route discovery process, the originating node starts broadcasting of 
 ![alt text](pictures/discovery_route.png "Discovery process")
 
 
+
 ## Generate a Route Request Message
 
 Generate a route request message to find a route from OrigAddr to TargAddr using the given MetricType
