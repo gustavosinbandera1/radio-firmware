@@ -26,8 +26,6 @@
     - [Resource constraints](#resource-constraints)
     - [Heterogeneity](#heterogeneity)
   - [AODVv2 Reactive Routing protocol](#aodvv2-reactive-routing-protocol)
-  - [AODVv2 the evolution of AODV](#aodvv2-the-evolution-of-aodv)
-  - [Degrading performance in AODVv2 to avoid routing loops](#degrading-performance-in-aodvv2-to-avoid-routing-loops)
   - [Route Tables](#route-tables)
     - [In AODVv2, the routing tables can be updated if:](#in-aodvv2-the-routing-tables-can-be-updated-if)
  
@@ -62,27 +60,13 @@ MANET routing protocols face some challenges to be able to work in the envisione
 
 ## AODVv2 Reactive Routing protocol
 
-AODVv2 reactive protocol look for routes by flooding **on-demand** route requests through the network. This means that when a data packet aimed for some destinations is injected into the network, the protocol initiates the route discovery process to deliver the data packet to its destination.
-The picture shows a network containing 4 nodes connected to each other in a linear topology running the AODVv2 routing algorithm; s is the source node,d is the destination node,l and m are the intermediate nodes. Representation of the AODVv2 control messages is also shown in the figure. The field ∗ depicts recipients of (re)broadcast control messages that are nodes in the transmission range of the sender node.
-
-
-
-
-## AODVv2 the evolution of AODV
-
 This section provides a brief overview of AODV v2 protocol, in this one each node maintains a routing table (RT) containing information about the routes to be followed when sending messages to the others nodes of the network. The collective information in the nodes **"Routig table"** is at best a partial representation of network connectivity as it was at some times in the past.
 
-We report a scheme of the AODVv2 protocol with an injected packet having the source node s and destination node d. When s receives the data packet, it ﬁrst looks up an entry for d in its routing table. If there is no such entry, it broadcasts a rreq message through the network. Afterwards when an intermediate node receives the rreq, it ﬁrst checks whether or not the information in the message is new. If this is not the case, the receiving intermediate node discards the rreq and the processing stops. If the information is new, the receiving node updates its routing table based on the information in the rreq. Then, it checks if it has a route to the destination d. If this information is provided, intermediate node sends a rrep back to the source s. By this, AODVv2 establishes bidirectional routes between originator and destination. On the other hand, if the intermediate node does not have any route to d, it adds its own address to the rreq and rebroadcasts the message. When next intermediate node receives the rebroadcast rreq, it updates (if the message is new) the routing table entry associated with s and the corresponding intermediate sender node and repeats the same steps executed by the former intermediate node. Finally when the destination d receives the rreq, it updates its routing table for the source node s and all the intermediate nodes that have rebroadcast the rreq, and then sends a unicast rrep that follows the reverse path towards s. Each node receiving the rrep will update the routing table entry associated with d and intermediate nodes. Nodes also monitor the status of alternative active routes to diﬀerent destina-tions. Upon detecting the breakage of a link in an active route, an rerr message is broadcast to notify the other nodes about the link failure. The rerr message contains the information about those destinations that are no longer reachable toward the broken link. When a node receives an rerr from its neighbours, it invalidates the corresponding route entry for the unreachable destinations.
+The basic routine of AODVv2 is similar to the one of AODV:  
+if a node **S** is required to send one or more data packets to a target node **T**, but does not have a route stored in  its routing table, it buffers the data and initiates a route discovery process by broadcasting or flooding a route request (RREQ) message. The RREQ is typically forwarded by intermediate nodes that  are not the target. An intermediate node that receives the RREQ message updates its routing table by creating entries for a route to the originator of the message **(node S)** and to all intermediate nodes that have forwarded the RREQ message (path accumulation). After that, the node typically re-broadcasts the request to its neighbours. This is repeated until the RREQ reaches the target node **T** that replies by unicasting a corresponding route reply (RREP) message back to the source **S** along the previous established path. To shorten route-discovery times, intermediate nodes are allowed to and should reply on behalf of the target if they know a route to **T**. An intermediate node that has this information updates its routing table as usual; after that it unicasts a RREP message back to the originator of the RREQ message **(nodeS)**, but it also unicasts a RREP message to the target **node T**. By this,routes between **S** and **T**, and between **T** and **S** are established. The RREP messages are forwarded by  the  intermediate nodes along previously established routes. When forwarding RREP messages, nodes create routing table entries for all nodes that have already forwarded that route, to the originator of the RREP message and, in case the originator is different to the target of the original RREQ, also to the target **node T**. After the RREP message has reached **node S**, a route from **S** to **T** is established and data packets can start to flow.
 
-
-
-## Degrading performance in AODVv2 to avoid routing loops
-
-Differents studies have proved the presence of loops in AODV protocol.
-
-In this current version,if route discovery is initiated the intermediate nodes which have active routes
-through the destination do not send the rrep to the originator, meaning that the destination of the rreq has sole responsibility for sending the rrep back to the originator. By this, they have solved the problem of having loops in the network, but the performance level has decreased.
-
+In  case  of  link  breaks,  AODVv2  uses  route  error  (RERR)messages  to  notify  affected  nodes,  i.e.,  nodes  that  could potentially use this link: 
+if a link break is detected by a node,it invalidates all routes stored in the node’s own routing table that actually use the broken link. Then it broadcasts a RERR message containing the unreachable destinations to all (direct) neighbours using this route. When updating routing table entries,  nodes use sequence numbers to determine the freshness of an entry. The larger the sequence number, the fresher the information a sequence number with value 0 indicates that the number is not known. To maintain the information about sequence numbers each node  stores  its  own  sequence  number.  It  is a common belief that sequence numbers are sufficient to guarantee loop freedom if they are monotonically increased over time. Whenever a node initiates a route request or a route reply, it increments its own sequence number and transmits the incremented value as part of the message. Whenever a RREQ or a RREP message is forwarded, an intermediate node adds its sequence number together with its IP-address to the content of the message.
 
 ## Route Tables
 
